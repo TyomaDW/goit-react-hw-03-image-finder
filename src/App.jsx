@@ -5,7 +5,7 @@ import ApiService from './services/ApiService';
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
-
+import Spinner from './components/Loader';
 import Modal from './components/Modal';
 
 import styles from './App.module.scss';
@@ -117,7 +117,7 @@ class App extends Component {
 
         {showLoadMoreButton && <Button onClickButton={this.fetchImages} />}
 
-        {isLoading && <h2>Loading...</h2>}
+        {isLoading && <Spinner />}
 
         {showModal && (
           <Modal onClose={this.toggleModal}>
