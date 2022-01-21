@@ -40,10 +40,15 @@ class App extends Component {
     const { searchQuery, pageNumber } = this.state;
     const arg = { searchQuery, pageNumber };
 
+    if (!searchQuery) {
+      return;
+    }
+
     this.setState({ isLoading: true });
 
     try {
       const { hits } = await ApiService(arg);
+      console.log(hits);
 
       this.setState(prevState => ({
         images: [...prevState.images, ...hits],
@@ -53,18 +58,16 @@ class App extends Component {
       if (pageNumber !== 1) {
         this.scrollToLoadButton();
       }
+
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
     } catch (error) {
       this.setState({ error });
     } finally {
       this.setState({ isLoading: false });
     }
-  };
-
-  scrollToLoadButton = () => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
   };
 
   toggleModal = () => {
