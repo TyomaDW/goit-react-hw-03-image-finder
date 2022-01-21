@@ -4,18 +4,14 @@ import defaultImage from './default-image.jpg';
 
 import styles from './ImageGalleryItem.module.scss';
 
-const ImageGalleryItem = ({ image, onClickImage }) => {
-  const { webformatURL, tags, largeImageURL } = image;
-
-  const openLargeImage = () => onClickImage(largeImageURL);
-
+const ImageGalleryItem = ({ image, tags, onClickImage, largeImageURL }) => {
   return (
     <li className={styles.ImageGalleryItem}>
       <img
-        src={webformatURL}
+        src={image}
         alt={tags}
         className={styles.ImageGalleryItem__image}
-        onClick={openLargeImage}
+        onClick={() => onClickImage(largeImageURL)}
       />
     </li>
   );

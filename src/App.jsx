@@ -5,7 +5,7 @@ import ApiService from './services/ApiService';
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
-import Loader from './components/Loader';
+
 import Modal from './components/Modal';
 
 import styles from './App.module.scss';
@@ -31,59 +31,76 @@ class App extends Component {
     this.setState({
       images: [],
       pageNumber: 1,
-      searchQuery: query,
+      searchQuery: query.trim(),
       error: null,
     });
   };
 
-  fetchImages = async () => {
+  fetchImages = () => {
     const { searchQuery, pageNumber } = this.state;
     const arg = { searchQuery, pageNumber };
-
-    if (!searchQuery) {
-      return;
-    }
-
+    if (!searchQuery) return;
     this.setState({ isLoading: true });
 
-    try {
-      const { hits } = await ApiService(arg);
-      console.log(hits);
-
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        pageNumber: prevState.pageNumber + 1,
-      }));
-
-      if (pageNumber !== 1) {
-        this.scrollToLoadButton();
-      }
-
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
+    ApiService(arg)
+      .then(({ hits }) => {
+        if (hits.length === 0) {
+          return alert(`Повторите запрос!`);
+        }
+        this.setState(prevState => ({
+          images: [...prevState.images, ...hits],
+          pageNumber: prevState.pageNumber + 1,
+        }));
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        });
+      })
+      .catch(error => this.setState({ error }))
+      .finally(() => {
+        this.setState({ isLoading: false });
       });
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
-    }
   };
+  // fetchImages = async () => {
+  //   try {
+  //     const { searchQuery, pageNumber } = this.state;
+  //     const arg = { searchQuery, pageNumber };
+
+  //     if (!searchQuery) {
+  //       return;
+  //     }
+
+  //     this.setState({ isLoading: true });
+
+  //     const { hits } = await ApiService(arg);
+  //     console.log(hits);
+
+  //     this.setState(prevState => ({
+  //       images: [...prevState.images, ...hits],
+  //       pageNumber: prevState.pageNumber + 1,
+  //     }));
+
+  //     if (pageNumber !== 1) {
+  //       this.scrollToLoadButton();
+  //     }
+
+  //     window.scrollTo({
+  //       top: document.documentElement.scrollHeight,
+  //       behavior: 'smooth',
+  //     });
+  //   } catch (error) {
+  //     this.setState({ error });
+  //   } finally {
+  //     this.setState({ isLoading: false });
+  //   }
+  // };
 
   toggleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
+    this.setState({ largeImage: '', showModal: false });
   };
 
-  openModal = imageForModal => {
-    this.setState({ largeImage: imageForModal });
-
-    this.toggleModal();
-  };
-
-  closeModal = () => {
-    this.setState({ largeImage: '' });
-
-    this.toggleModal();
+  openModal = largeImageURL => {
+    this.setState({ largeImage: largeImageURL, showModal: true });
   };
 
   render() {
@@ -94,20 +111,16 @@ class App extends Component {
       <div className={styles.App}>
         <Searchbar onSubmit={this.onChangeQuery} />
 
-        {error && (
-          <error>
-            <p>Произошла ошибка, ...</p>
-          </error>
-        )}
+        {error && <p>Произошла ошибка ...</p>}
 
-        <ImageGallery images={images} onClickImage={this.openModal} />
+        <ImageGallery images={images} onImageClick={this.openModal} />
 
         {showLoadMoreButton && <Button onClickButton={this.fetchImages} />}
 
-        {isLoading && <Loader />}
+        {isLoading && <h2>Loading...</h2>}
 
         {showModal && (
-          <Modal onClose={this.closeModal}>
+          <Modal onClose={this.toggleModal}>
             <img src={largeImage} alt="" />
           </Modal>
         )}
