@@ -19,6 +19,7 @@ class App extends Component {
     showModal: false,
     largeImage: '',
     error: null,
+    total: 0,
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -40,16 +41,15 @@ class App extends Component {
     const { searchQuery, pageNumber } = this.state;
     const arg = { searchQuery, pageNumber };
     if (!searchQuery) return;
+
     this.setState({ isLoading: true });
 
     ApiService(arg)
       .then(({ hits }) => {
-        if (hits.length === 0) {
-          return alert(`Повторите запрос!`);
-        }
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
           pageNumber: prevState.pageNumber + 1,
+          total: hits.length,
         }));
         window.scrollTo({
           top: document.documentElement.scrollHeight,
@@ -61,6 +61,7 @@ class App extends Component {
         this.setState({ isLoading: false });
       });
   };
+
   // fetchImages = async () => {
   //   try {
   //     const { searchQuery, pageNumber } = this.state;
@@ -104,8 +105,12 @@ class App extends Component {
   };
 
   render() {
-    const { images, isLoading, showModal, largeImage, error } = this.state;
-    const showLoadMoreButton = images.length > 0 && !isLoading;
+    const { images, isLoading, showModal, largeImage, error, total } =
+      this.state;
+
+    const showLoadMoreButton = images.length !== 0 && !isLoading && total > 0;
+
+    console.log(showLoadMoreButton);
 
     return (
       <div className={styles.App}>
@@ -130,3 +135,37 @@ class App extends Component {
 }
 
 export default App;
+
+// fetchImages = async () => {
+//   try {
+//     const { searchQuery, pageNumber } = this.state;
+//     const arg = { searchQuery, pageNumber };
+
+//     if (!searchQuery) {
+//       return;
+//     }
+
+//     this.setState({ isLoading: true });
+
+//     const { hits } = await ApiService(arg);
+//     console.log(hits);
+
+//     this.setState(prevState => ({
+//       images: [...prevState.images, ...hits],
+//       pageNumber: prevState.pageNumber + 1,
+//     }));
+
+//     if (pageNumber !== 1) {
+//       this.scrollToLoadButton();
+//     }
+
+//     window.scrollTo({
+//       top: document.documentElement.scrollHeight,
+//       behavior: 'smooth',
+//     });
+//   } catch (error) {
+//     this.setState({ error });
+//   } finally {
+//     this.setState({ isLoading: false });
+//   }
+// };
